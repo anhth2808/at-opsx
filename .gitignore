@@ -5,3 +5,6 @@ sandbox/
 NUL
 
 node_modules/
+
+# omp session-local plugin registry (repo-root runs)
+.omp/
