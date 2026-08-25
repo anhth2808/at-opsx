@@ -40,20 +40,24 @@ Yêu cầu: Node ≥ 20, `openspec` (1.9.0 đã kiểm chứng) trên PATH.
 **1) Load extension (chọn MỘT cách):**
 
 ```bash
-# git-direct (đơn giản nhất — repo public, tag phải tồn tại):
-omp install github:anhth2808/at-opsx#v0.1.0
+# PER-PROJECT (khuyến nghị — đúng intent gốc; marketplace install hỗ trợ --scope=project):
+omp plugin marketplace add anhth2808/at-opsx        # một lần duy nhất trên máy
+cd <project> && omp install opsx-autopilot@at-opsx --scope=project
+
+# USER-GLOBAL (một lần cho mọi project — extension tự no-op ngoài project OpenSpec):
+omp install github:anhth2808/at-opsx#v0.1.0        # git-direct, tag phải tồn tại
 # hoặc https git URL:
 omp install https://github.com/anhth2808/at-opsx.git
 # hoặc từ checkout local (Windows cần Developer Mode vì dùng symlink):
 git clone https://github.com/anhth2808/at-opsx && omp install ./at-opsx
-# hoặc qua marketplace:
-omp plugin marketplace add anhth2808/at-opsx
-omp install opsx-autopilot@at-opsx
 # hoặc one-shot:
 omp --extension ./src/main.ts
 ```
 
-Ghi chú: git-direct resolve qua GitHub tarball API nên **không** nhận `file://` local; plugin id luôn là `opsx-autopilot` (theo `package.json`), bất kể tên repo. Extension no-op hoàn toàn ở project không có `openspec/` nên để user scope là an toàn. Phiên bản: bump `package.json` + `.claude-plugin/marketplace.json` + git tag (`vX.Y.Z`) rồi install với `#vX.Y.Z`. Kiểm tra đã load: `omp -p '/opsx-auto'` (command do extension đăng ký).
+Ghi chú:
+- Git-direct resolve qua GitHub tarball API nên **không** nhận `file://` local; plugin id luôn là `opsx-autopilot` (theo `package.json`), bất kể tên repo.
+- Project-scope: registry nằm ở `<project>/.omp/plugins/installed_plugins.json`, chỉ load khi omp chạy đúng cwd đó (`omp plugin list` ở thư mục khác sẽ trống). **Caveat**: bản ghi project trỏ vào cache dùng chung `~/.omp/plugins/cache/` — gỡ bản user-scope cùng plugin sẽ dọn sạch cache này làm project install treo; khắc phục: `omp install opsx-autopilot@at-opsx --scope=project --force`. Cài bản project SAU CÙNG.
+- Phiên bản: bump `package.json` + `.claude-plugin/marketplace.json` + git tag (`vX.Y.Z`) rồi install với `#vX.Y.Z`. Kiểm tra đã load: `omp -p '/opsx-auto'` (command do extension đăng ký; dispatch im lặng ~2s = đã load, rơi xuống model = chưa).
 
 **2) Khởi tạo per-project (một lệnh):**
 
