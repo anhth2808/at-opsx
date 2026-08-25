@@ -2,9 +2,12 @@
  * opsx-autopilot — auto-trigger layer for OpenSpec on OMP.
  *
  * Invariant: OpenSpec core stays 100% untouched. This extension NEVER writes
- * files, never blocks tools, and never runs `openspec archive` itself. All
- * mutations flow through the agent executing OpenSpec skills/CLI, driven by
- * directives injected at `session_stop`.
+ * anything under `openspec/`, never blocks tools, and never runs
+ * `openspec archive` itself. All OpenSpec mutations flow through the agent
+ * executing OpenSpec skills/CLI, driven by directives injected at
+ * `session_stop`. The only files it writes are its own `.omp/` assets: the
+ * routing rule (self-heal from the packaged rules/) and the default config
+ * (via /opsx-init).
  *
  * Runtime deps: Node/Bun builtins only (the omp package import below is
  * type-only and erased at load).

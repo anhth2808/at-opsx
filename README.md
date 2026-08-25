@@ -20,16 +20,16 @@ openspec/changes/<id>/ artifacts ──► openspec-apply-change (implements, ch
 openspec/changes/archive/YYYY-MM-DD-<id>/  +  openspec/specs/<capability>/spec.md
 ```
 
-**Invariant:** OpenSpec core stays 100% untouched. The extension never writes files, never blocks tools, and never runs `openspec archive` itself — every mutation flows through the agent executing OpenSpec skills/CLI. Nothing lives under the generated `.omp/skills/` or `.omp/commands/` trees, so `openspec update` can regenerate them freely.
+**Invariant:** OpenSpec core stays 100% untouched. The extension never writes anything under `openspec/`, never blocks tools, and never runs `openspec archive` itself — every OpenSpec mutation flows through the agent executing OpenSpec skills/CLI. The only files it writes are its own `.omp/` assets (the routing rule via self-heal, the default config via `/opsx-init`). Nothing lives under the generated `.omp/skills/` or `.omp/commands/` trees, so `openspec update` can regenerate them freely.
 
 ## Repo layout (omp extension package)
 
 ```
 package.json                    ← omp.extensions manifest → ./src/main.ts
-src/main.ts                     ← extension factory (ExtensionAPI)
-assets/rules/opsx-autopilot.md   ← project-scoped routing rule (NOT a capability folder — copied in by init.mjs)
-config/opsx-autopilot.json      ← default project config (copied in by init.mjs)
-init.mjs                        ← per-project initializer (openspec init + rule + config)
+src/main.ts                     ← extension factory (ExtensionAPI) + /opsx-init + /opsx-auto
+rules/opsx-autopilot.md         ← routing rule (single source — self-healed into each project's .omp/rules/)
+config/opsx-autopilot.json      ← default project config (copied by init.mjs; /opsx-init writes it inline)
+init.mjs                        ← scripted/CI initializer (openspec init + config; --vendor fallback)
 .claude-plugin/marketplace.json ← marketplace catalog
 ```
 
@@ -40,21 +40,22 @@ Yêu cầu: Node ≥ 20, `openspec` (1.9.0 đã kiểm chứng) trên PATH.
 **1) Load extension (chọn MỘT cách):**
 
 ```bash
-# PER-PROJECT (khuyến nghị — đúng intent gốc; marketplace install hỗ trợ --scope=project):
-omp plugin marketplace add anhth2808/at-opsx        # một lần duy nhất trên máy
-cd <project> && omp install opsx-autopilot@at-opsx --scope=project
-
-# USER-GLOBAL (một lần cho mọi project — extension tự no-op ngoài project OpenSpec):
-omp install github:anhth2808/at-opsx#v0.1.0        # git-direct, tag phải tồn tại
+# GIT-DIRECT (gọn nhất cho dùng cá nhân — một lệnh cho mọi project):
+omp install github:anhth2808/at-opsx#v0.2.1        # tag phải tồn tại; bump tag để update
 # hoặc https git URL:
 omp install https://github.com/anhth2808/at-opsx.git
 # hoặc từ checkout local (Windows cần Developer Mode vì dùng symlink):
 git clone https://github.com/anhth2808/at-opsx && omp install ./at-opsx
 # hoặc one-shot:
 omp --extension ./src/main.ts
+
+# PER-PROJECT (muốn đăng ký theo từng project; marketplace hỗ trợ --scope=project):
+omp plugin marketplace add anhth2808/at-opsx        # một lần duy nhất trên máy
+cd <project> && omp install opsx-autopilot@at-opsx --scope=project
 ```
 
 Ghi chú:
+- **Không trộn lẫn** git-direct user-scope với `--scope=project` trong cùng project (extension load 2 lần → directive bắn kép).
 - Git-direct resolve qua GitHub tarball API nên **không** nhận `file://` local; plugin id luôn là `opsx-autopilot` (theo `package.json`), bất kể tên repo.
 - Project-scope: registry nằm ở `<project>/.omp/plugins/installed_plugins.json`, chỉ load khi omp chạy đúng cwd đó (`omp plugin list` ở thư mục khác sẽ trống). **Caveat**: bản ghi project trỏ vào cache dùng chung `~/.omp/plugins/cache/` — gỡ bản user-scope cùng plugin sẽ dọn sạch cache này làm project install treo; khắc phục: `omp install opsx-autopilot@at-opsx --scope=project --force`. Cài bản project SAU CÙNG.
 - Phiên bản: bump `package.json` + `.claude-plugin/marketplace.json` + git tag (`vX.Y.Z`) rồi install với `#vX.Y.Z`. Kiểm tra đã load: `omp -p '/opsx-auto'` (command do extension đăng ký; dispatch im lặng ~2s = đã load, rơi xuống model = chưa).
