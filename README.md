@@ -40,16 +40,20 @@ Yêu cầu: Node ≥ 20, `openspec` (1.9.0 đã kiểm chứng) trên PATH.
 **1) Load extension (chọn MỘT cách):**
 
 ```bash
-git clone <repo-url> && cd at-opsx
-omp install .                        # symlink checkout này vào plugin set (user scope)
+# git-direct (đơn giản nhất — repo public, tag phải tồn tại):
+omp install github:anhth2808/at-ospx#v0.1.0
+# hoặc https git URL:
+omp install https://github.com/anhth2808/at-ospx.git
+# hoặc từ checkout local (Windows cần Developer Mode vì dùng symlink):
+git clone https://github.com/anhth2808/at-ospx && omp install ./at-ospx
 # hoặc qua marketplace:
-omp plugin marketplace add <owner>/<repo>
+omp plugin marketplace add anhth2808/at-ospx
 omp install opsx-autopilot@at-opsx
 # hoặc one-shot:
 omp --extension ./src/main.ts
 ```
 
-Extension no-op hoàn toàn ở project không có `openspec/` nên để user scope là an toàn. Kiểm tra đã load: `omp -p '/extensions'`.
+Ghi chú: git-direct resolve qua GitHub tarball API nên **không** nhận `file://` local; plugin id luôn là `opsx-autopilot` (theo `package.json`), bất kể tên repo. Extension no-op hoàn toàn ở project không có `openspec/` nên để user scope là an toàn. Phiên bản: bump `package.json` + `.claude-plugin/marketplace.json` + git tag (`vX.Y.Z`) rồi install với `#vX.Y.Z`. Kiểm tra đã load: `omp -p '/opsx-auto'` (command do extension đăng ký).
 
 **2) Khởi tạo per-project (một lệnh):**
 
