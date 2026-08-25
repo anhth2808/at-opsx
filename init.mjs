@@ -180,7 +180,11 @@ if (!hasOpenspecProject) {
 
 const ompDir = join(target, ".omp");
 
-log("rule", copyFile(SRC.rule, join(ompDir, "rules", "opsx-autopilot.md"), { overwrite: true }));
+// Plugin mode: the rule ships in the package's rules/ capability folder and is
+// loaded by omp itself — only --vendor needs a local copy.
+if (vendor) {
+  log("rule", copyFile(SRC.rule, join(ompDir, "rules", "opsx-autopilot.md"), { overwrite: true }));
+}
 log("config", copyFile(SRC.config, join(ompDir, "opsx-autopilot.json"), { overwrite: force }));
 
 if (vendor) {
@@ -188,11 +192,10 @@ if (vendor) {
   log("config.yml", ensureConfigYml(ompDir));
 } else {
   console.log(
-    "[opsx-autopilot] extension: not copied (plugin mode) — load it with ONE of:\n" +
-      `  omp install ${scriptDir}                 # link this checkout (user scope)\n` +
-      `  omp plugin marketplace add <git-url>     # then: omp install opsx-autopilot@at-opsx\n` +
-      "  omp --extension " + scriptDir + "/src/main.ts   # one-shot\n" +
-      "Or re-run with --vendor to copy the extension into the project instead.",
+    "[opsx-autopilot] extension+rule: provided by the plugin (package rules/ capability) — load with ONE of:\n" +
+      `  omp plugin marketplace add anhth2808/at-opsx  # once per machine\n` +
+      `  omp install opsx-autopilot@at-opsx --scope=project  # inside the project\n` +
+      "Or run /opsx-init inside omp after installing the plugin.",
   );
 }
 

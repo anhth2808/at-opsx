@@ -12,7 +12,7 @@
 import type { ExtensionAPI } from "@oh-my-pi/pi-coding-agent";
 
 import { execFile } from "node:child_process";
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { promisify } from "node:util";
 
@@ -578,6 +578,58 @@ export default function opsxAutopilotExtension(pi: ExtensionAPI): void {
     } catch {
       return;
     }
+  });
+
+  // Bootstrap aid: /opsx-init — openspec init (when missing) + default config.
+  // Makes `omp install opsx-autopilot@at-opsx --scope=project` the ONLY step
+  // needed besides this command; init.mjs remains for scripted use.
+  pi.registerCommand("opsx-init", {
+    description: "opsx-autopilot: bootstrap OpenSpec (openspec init) and write the default config",
+    handler: async (
+      _args: unknown,
+      ctx: { cwd: string; ui: { notify: (m: string, l?: string) => void } },
+    ) => {
+      try {
+        if (!resolveLauncher()) {
+          ctx.ui.notify(
+            "opsx-init: `openspec` is not on PATH. Install it first: npm install -g @openspec/cli",
+            "error",
+          );
+          return;
+        }
+        if (!isOpenspecProject(ctx.cwd)) {
+          const r = await runOpenSpec(
+            execFn,
+            ctx.cwd,
+            ["init", "--tools", "oh-my-pi", "--no-copilot-cloud"],
+          );
+          if (!r || r.code !== 0) {
+            ctx.ui.notify(
+              `opsx-init: openspec init failed${r ? ` (exit ${r.code})` : ""}. Run manually:\n  openspec init --tools oh-my-pi --no-copilot-cloud`,
+              "error",
+            );
+            return;
+          }
+          ctx.ui.notify("opsx-init: openspec initialized (skills + commands in .omp/)", "info");
+        } else {
+          ctx.ui.notify("opsx-init: openspec/ already present — skipped init", "info");
+        }
+        const cfgPath = join(ctx.cwd, ".omp", "opsx-autopilot.json");
+        if (!existsSync(cfgPath)) {
+          mkdirSync(join(ctx.cwd, ".omp"), { recursive: true });
+          writeFileSync(cfgPath, `${JSON.stringify(DEFAULT_CONFIG, null, 2)}\n`, "utf8");
+          ctx.ui.notify(`opsx-init: wrote default config ${cfgPath} (tune verifyCmd/mode there)`, "info");
+        } else {
+          ctx.ui.notify(`opsx-init: config exists — kept (${cfgPath})`, "info");
+        }
+        ctx.ui.notify(
+          "opsx-init: done. Restart omp in this project, then describe work in a normal prompt.",
+          "info",
+        );
+      } catch (err) {
+        ctx.ui.notify(`opsx-init: ${(err as Error).message}`, "error");
+      }
+    },
   });
 
   // Debug aid: /opsx-auto — probe and show a compact summary.
