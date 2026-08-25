@@ -1,6 +1,6 @@
 {
-  "name": "at-opsx",
-  "owner": { "name": "at-opsx" },
+  "name": "at-ospx",
+  "owner": { "name": "at-ospx" },
   "plugins": [
     {
       "name": "opsx-autopilot",

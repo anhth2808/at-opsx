@@ -48,7 +48,7 @@ omp install https://github.com/anhth2808/at-ospx.git
 git clone https://github.com/anhth2808/at-ospx && omp install ./at-ospx
 # hoặc qua marketplace:
 omp plugin marketplace add anhth2808/at-ospx
-omp install opsx-autopilot@at-opsx
+omp install opsx-autopilot@at-ospx
 # hoặc one-shot:
 omp --extension ./src/main.ts
 ```
