@@ -41,14 +41,14 @@ Yêu cầu: Node ≥ 20, `openspec` (1.9.0 đã kiểm chứng) trên PATH.
 
 ```bash
 # git-direct (đơn giản nhất — repo public, tag phải tồn tại):
-omp install github:anhth2808/at-ospx#v0.1.0
+omp install github:anhth2808/at-opsx#v0.1.0
 # hoặc https git URL:
-omp install https://github.com/anhth2808/at-ospx.git
+omp install https://github.com/anhth2808/at-opsx.git
 # hoặc từ checkout local (Windows cần Developer Mode vì dùng symlink):
-git clone https://github.com/anhth2808/at-ospx && omp install ./at-ospx
+git clone https://github.com/anhth2808/at-opsx && omp install ./at-opsx
 # hoặc qua marketplace:
-omp plugin marketplace add anhth2808/at-ospx
-omp install opsx-autopilot@at-ospx
+omp plugin marketplace add anhth2808/at-opsx
+omp install opsx-autopilot@at-opsx
 # hoặc one-shot:
 omp --extension ./src/main.ts
 ```
