@@ -59,17 +59,13 @@ Ghi chú:
 - Project-scope: registry nằm ở `<project>/.omp/plugins/installed_plugins.json`, chỉ load khi omp chạy đúng cwd đó (`omp plugin list` ở thư mục khác sẽ trống). **Caveat**: bản ghi project trỏ vào cache dùng chung `~/.omp/plugins/cache/` — gỡ bản user-scope cùng plugin sẽ dọn sạch cache này làm project install treo; khắc phục: `omp install opsx-autopilot@at-opsx --scope=project --force`. Cài bản project SAU CÙNG.
 - Phiên bản: bump `package.json` + `.claude-plugin/marketplace.json` + git tag (`vX.Y.Z`) rồi install với `#vX.Y.Z`. Kiểm tra đã load: `omp -p '/opsx-auto'` (command do extension đăng ký; dispatch im lặng ~2s = đã load, rơi xuống model = chưa).
 
-**2) Khởi tạo per-project (một lệnh):**
+**2) Trong project (không cần node nữa):**
 
-```bash
-node <repo>/init.mjs <target-dir>
-```
+- Project **đã có** `openspec/`: chỉ cần mở omp trong project — extension tự ghi rule vào `.omp/rules/opsx-autopilot.md` ngay session đầu (single source: `rules/` trong package), config dùng defaults. Rule active từ omp start kế tiếp.
+- Project **chưa có** `openspec/`: mở omp trong project, gõ `/opsx-init` — bootstrap `openspec init --tools oh-my-pi --no-copilot-cloud` + ghi config mặc định + ensure rule.
+- Tùy chỉnh config (verifyCmd, mode): sửa `.omp/opsx-autopilot.json`.
 
-- chạy `openspec init --tools oh-my-pi --no-copilot-cloud` nếu project chưa có `openspec/` (idempotent),
-- copy `assets/rules/opsx-autopilot.md` → `<target>/.omp/rules/` (rule luôn project-scoped — không nhiễu project khác; đặt ngoài thư mục `rules/` của repo để plugin không nhặt global),
-- copy `config/opsx-autopilot.json` → `<target>/.omp/opsx-autopilot.json` (skip nếu có, trừ `--force`).
-
-`--vendor`: cho omp build không có plugin support — copy thêm `src/main.ts` vào `<target>/.omp/extensions/` + merge `.omp/config.yml`. **Không dùng đồng thời plugin install và `--vendor`** trong cùng project (đăng ký kép).
+`init.mjs` vẫn giữ cho scripted/CI (`node init.mjs <target>` = openspec init + config; `--vendor` = copy cả extension + rule + config.yml cho omp build không có plugin support — **không dùng đồng thời** plugin install và `--vendor` trong cùng project).
 
 Restart omp trong project đó là xong.
 
