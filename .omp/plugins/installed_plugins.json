@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "plugins": {
+    "opsx-autopilot@at-opsx": [
+      {
+        "scope": "project",
+        "installPath": "C:\\Users\\Admin\\.omp\\plugins\\cache\\plugins\\at-opsx___opsx-autopilot___0.2.0",
+        "version": "0.2.0",
+        "installedAt": "2026-08-25T16:36:25.065Z",
+        "lastUpdated": "2026-08-25T16:36:25.065Z"
+      }
+    ]
+  }
+}

@@ -482,7 +482,7 @@ export default function opsxAutopilotExtension(pi: ExtensionAPI): void {
   }
 
   function suggestNudge(
-    ctx: { ui: { notify: (m: string, l?: string) => void }; hasUI?: boolean },
+    ctx: { ui: { notify: (m: string, l?: string) => void } },
     id: string,
   ): void {
     try {
@@ -495,9 +495,35 @@ export default function opsxAutopilotExtension(pi: ExtensionAPI): void {
     }
   }
 
+  /**
+   * Plugin `rules/` capability folders are not registered by omp's plugin
+   * discovery on current builds, so the extension ensures the rule itself:
+   * on session start in an OpenSpec project, copy the packaged
+   * rules/opsx-autopilot.md into <cwd>/.omp/rules/ when missing. The rule
+   * takes effect from the NEXT omp start in that project. Vendored installs
+   * skip this (init.mjs --vendor already placed the rule; no package dir).
+   */
+  function ensureProjectRule(cwd: string): void {
+    try {
+      if (!isOpenspecProject(cwd)) return;
+      const dst = join(cwd, ".omp", "rules", "opsx-autopilot.md");
+      if (existsSync(dst)) return;
+      // Bun exposes import.meta.dir at runtime; TS lib types lack it.
+      const meta = import.meta as { dir?: string };
+      if (!meta.dir) return;
+      const src = join(meta.dir, "..", "rules", "opsx-autopilot.md");
+      if (!existsSync(src)) return;
+      mkdirSync(join(cwd, ".omp", "rules"), { recursive: true });
+      writeFileSync(dst, readFileSync(src, "utf8"), "utf8");
+    } catch {
+      // best-effort — the rule also ships via init.mjs for scripted installs
+    }
+  }
+
   for (const ev of ["session_start", "session_branch", "session_tree"] as const) {
     pi.on(ev, async (_event: unknown, ctx: { cwd: string; sessionManager: { getBranch: () => unknown[] } }) => {
       restoreFired(ctx);
+      ensureProjectRule(ctx.cwd);
     });
   }
 
@@ -622,6 +648,8 @@ export default function opsxAutopilotExtension(pi: ExtensionAPI): void {
         } else {
           ctx.ui.notify(`opsx-init: config exists — kept (${cfgPath})`, "info");
         }
+        ensureProjectRule(ctx.cwd);
+        ctx.ui.notify("opsx-init: rule ensured at .omp/rules/opsx-autopilot.md (active from next omp start)", "info");
         ctx.ui.notify(
           "opsx-init: done. Restart omp in this project, then describe work in a normal prompt.",
           "info",
