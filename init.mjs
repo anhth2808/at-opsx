@@ -26,11 +26,10 @@ const EXTENSION_ENTRY = "./.omp/extensions/opsx-autopilot.ts";
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const SRC = {
   extension: join(scriptDir, "src", "main.ts"),
-  rule: join(scriptDir, "rules", "opsx-autopilot.md"),
+  rule: join(scriptDir, "assets", "rules", "opsx-autopilot.md"),
   config: join(scriptDir, "config", "opsx-autopilot.json"),
 };
 
-// ---------------------------------------------------------------------------
 // Args
 // ---------------------------------------------------------------------------
 

@@ -27,7 +27,7 @@ openspec/changes/archive/YYYY-MM-DD-<id>/  +  openspec/specs/<capability>/spec.m
 ```
 package.json                    ← omp.extensions manifest → ./src/main.ts
 src/main.ts                     ← extension factory (ExtensionAPI)
-rules/opsx-autopilot.md         ← project-scoped routing rule (copied in by init.mjs)
+assets/rules/opsx-autopilot.md   ← project-scoped routing rule (NOT a capability folder — copied in by init.mjs)
 config/opsx-autopilot.json      ← default project config (copied in by init.mjs)
 init.mjs                        ← per-project initializer (openspec init + rule + config)
 .claude-plugin/marketplace.json ← marketplace catalog
@@ -58,7 +58,7 @@ node <repo>/init.mjs <target-dir>
 ```
 
 - chạy `openspec init --tools oh-my-pi --no-copilot-cloud` nếu project chưa có `openspec/` (idempotent),
-- copy `rules/opsx-autopilot.md` → `<target>/.omp/rules/` (rule luôn project-scoped — không nhiễu project khác),
+- copy `assets/rules/opsx-autopilot.md` → `<target>/.omp/rules/` (rule luôn project-scoped — không nhiễu project khác; đặt ngoài thư mục `rules/` của repo để plugin không nhặt global),
 - copy `config/opsx-autopilot.json` → `<target>/.omp/opsx-autopilot.json` (skip nếu có, trừ `--force`).
 
 `--vendor`: cho omp build không có plugin support — copy thêm `src/main.ts` vào `<target>/.omp/extensions/` + merge `.omp/config.yml`. **Không dùng đồng thời plugin install và `--vendor`** trong cùng project (đăng ký kép).
