@@ -1,0 +1,14 @@
+{
+  "name": "at-opsx",
+  "owner": { "name": "at-opsx" },
+  "plugins": [
+    {
+      "name": "opsx-autopilot",
+      "version": "0.1.0",
+      "category": "workflow",
+      "tags": ["openspec", "automation", "spec-driven"],
+      "description": "Auto-pilot layer for OpenSpec on OMP: intent routing + apply/archive chaining, archive is user-gated, spec-sync automatic.",
+      "source": "./"
+    }
+  ]
+}

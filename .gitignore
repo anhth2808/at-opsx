@@ -1,0 +1,7 @@
+# scratch / verification sandbox
+sandbox/
+
+# never commit the Windows null-device artifact bun build can create
+NUL
+
+node_modules/
