@@ -41,7 +41,7 @@ Yêu cầu: Node ≥ 20, `openspec` (1.9.0 đã kiểm chứng) trên PATH.
 
 ```bash
 # GIT-DIRECT (gọn nhất cho dùng cá nhân — một lệnh cho mọi project):
-omp install github:anhth2808/at-opsx#v0.2.1        # tag phải tồn tại; bump tag để update
+omp install github:anhth2808/at-opsx#v0.3.0        # tag phải tồn tại; bump tag để update
 # hoặc https git URL:
 omp install https://github.com/anhth2808/at-opsx.git
 # hoặc từ checkout local (Windows cần Developer Mode vì dùng symlink):
