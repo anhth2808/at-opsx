@@ -85,7 +85,10 @@ Restart omp trong project đó là xong.
 
 Hành vi archive: **hỏi user, sync tự động** — sau self-review agent hỏi `Archive "<id>" now?`, bạn đồng ý thì archive + inline sync chạy luôn (luôn chọn "Sync now (recommended)"); từ chối thì change giữ nguyên.
 
-Debug aid: lệnh `/opsx-auto` probe trạng thái + gates + fire-keys.
+Lệnh của extension:
+- `/opsx-init` — bootstrap `openspec init` (project mới) + ghi config mặc định + ensure rule.
+- `/opsx-update` — chạy `openspec update --force`: tái sinh skills/commands theo CLI mới (chạy sau khi nâng cấp openspec).
+- `/opsx-auto` — probe trạng thái + gates + fire-keys (debug).
 
 ## Uninstall
 

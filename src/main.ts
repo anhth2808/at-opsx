@@ -663,6 +663,44 @@ export default function opsxAutopilotExtension(pi: ExtensionAPI): void {
     },
   });
 
+  // Maintenance aid: /opsx-update — regenerate OpenSpec skills/commands to
+  // match the installed openspec CLI (run after upgrading the CLI).
+  pi.registerCommand("opsx-update", {
+    description: "opsx-autopilot: run `openspec update` to sync generated skills/commands to the installed CLI",
+    handler: async (
+      _args: unknown,
+      ctx: { cwd: string; ui: { notify: (m: string, l?: string) => void } },
+    ) => {
+      try {
+        if (!resolveLauncher()) {
+          ctx.ui.notify("opsx-update: `openspec` is not on PATH.", "error");
+          return;
+        }
+        if (!isOpenspecProject(ctx.cwd)) {
+          ctx.ui.notify("opsx-update: not an OpenSpec project — run /opsx-init first.", "error");
+          return;
+        }
+        const r = await runOpenSpec(execFn, ctx.cwd, ["update", "--force"]);
+        if (!r || r.code !== 0) {
+          ctx.ui.notify(
+            `opsx-update: openspec update failed${r ? ` (exit ${r.code})` : ""}. Run manually: openspec update --force`,
+            "error",
+          );
+          return;
+        }
+        const tail = (r.stdout || "")
+          .split(/\r?\n/)
+          .map((l) => l.trim())
+          .filter(Boolean)
+          .slice(-5)
+          .join(" | ");
+        ctx.ui.notify(`opsx-update: done. ${tail}`, "info");
+      } catch (err) {
+        ctx.ui.notify(`opsx-update: ${(err as Error).message}`, "error");
+      }
+    },
+  });
+
   // Debug aid: /opsx-auto — probe and show a compact summary.
   pi.registerCommand("opsx-auto", {
     description: "opsx-autopilot: probe OpenSpec state and show a summary",
