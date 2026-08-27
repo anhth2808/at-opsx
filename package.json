@@ -1,6 +1,6 @@
 {
   "name": "opsx-autopilot",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Auto-pilot layer for OpenSpec on OMP: intent routing + session_stop chaining (propose -> apply -> self-review -> ask-to-archive with auto-sync)",
   "keywords": ["omp", "openspec", "extension", "spec-driven"],
   "license": "MIT",

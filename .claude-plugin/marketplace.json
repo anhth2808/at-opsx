@@ -4,7 +4,7 @@
   "plugins": [
     {
       "name": "opsx-autopilot",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "category": "workflow",
       "tags": ["openspec", "automation", "spec-driven"],
       "description": "Auto-pilot layer for OpenSpec on OMP: intent routing + apply/archive chaining, archive is user-gated, spec-sync automatic.",

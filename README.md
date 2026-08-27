@@ -90,6 +90,16 @@ Lệnh của extension:
 - `/opsx-update` — chạy `openspec update --force`: tái sinh skills/commands theo CLI mới (chạy sau khi nâng cấp openspec).
 - `/opsx-auto` — probe trạng thái + gates + fire-keys (debug).
 
+## GitHub issue flow
+
+v0.4.0 thêm vòng đời backlog: defer → issue → pull → close, chạy trên `gh` CLI (agent tự gọi bằng bash tool; không cần GitHub MCP server).
+
+- **Prereqs**: `gh` đã install + `gh auth login` (scope `repo`); origin của project phải nằm trên GitHub. Thiếu → agent báo đúng điều thiếu rồi dừng, không bao giờ tạo issue sang repo khác.
+- **Defer** (lưu task lại, chưa làm): trigger kiểu "để sau", "tạo issue", "log issue", "backlog", "not now", "TODO", "lưu lại task này" → agent đọc code liên quan, soạn draft (title + body `## Context / ## Problem / ## Acceptance criteria / ## Notes`), **show draft và chờ bạn confirm trong chat** rồi mới chạy `gh issue create`. Từ chối → bỏ. Không scaffold `openspec/changes/`, không sửa code. Không label/assignee mặc định (chỉ thêm khi bạn yêu cầu, sau khi kiểm `gh label list`).
+- **Pull** (khi sẵn sàng làm): "làm issue #N" hoặc URL issue → agent `gh issue view` rồi coi title+body như work request bình thường, route vào propose flow. Convention: dòng ĐẦU TIÊN của `proposal.md` là `Issue: #N`.
+- **Post-archive**: change có `Issue: #N` vừa archive xong → agent hỏi "close issue #N kèm tóm tắt chứ?" → đồng ý thì `gh issue close N --reason completed --comment "<tóm tắt + change id>"`.
+- **Upgrade note**: cài lại bản mới (`omp install github:anhth2808/at-opsx#vX.Y.Z`) → rule trong `.omp/rules/` tự nâng cấp ở session start kế tiếp (versioned sync: bản cũ backup thành `opsx-autopilot.md.bak` cùng dir; rule marker version ≥ packaged thì giữ nguyên).
+
 ## Uninstall
 
 - Plugin: `omp plugin uninstall opsx-autopilot` (hoặc gỡ `--extension` khỏi config).

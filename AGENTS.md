@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-`opsx-autopilot` (repo `at-opsx`) is a git-distributed **omp extension package** (v0.3.0) that adds an auto-pilot layer over [OpenSpec](https://openspec.io) on the OMP coding harness. A normal prompt routes through OpenSpec's workflow without `/opsx-*` slash commands: intent routing (rule) → propose → apply → self-review → **user-gated archive with automatic spec-delta sync**, chained via `session_stop` continuation directives.
+`opsx-autopilot` (repo `at-opsx`) is a git-distributed **omp extension package** (v0.4.0) that adds an auto-pilot layer over [OpenSpec](https://openspec.io) on the OMP coding harness. A normal prompt routes through OpenSpec's workflow without `/opsx-*` slash commands: intent routing (rule) → propose → apply → self-review → **user-gated archive with automatic spec-delta sync**, chained via `session_stop` continuation directives. Defer-intent prompts go to a GitHub-issue backlog loop instead (defer → `gh issue create`; pull → propose; post-archive → close) — agent-driven via `gh`, no extra commands/config.
 
 **Core invariant**: OpenSpec stays 100% untouched. The extension never writes under `openspec/`, never blocks tools, never runs `openspec archive` — all OpenSpec mutations flow through the agent executing OpenSpec skills/CLI. The only files the extension writes are its own `.omp/` assets (rule self-heal, default config). Nothing lives under generated `.omp/skills/` or `.omp/commands/`, so `openspec update` regenerates them freely.
 
@@ -27,7 +27,7 @@ Event → action state machine:
 
 **Loop safety**: fired keys `<id>:apply`, `<id>:archive`, `<id>:gates-fix`, `chooser:<sorted-ids>` — each directive fires at most once per change; persisted via `pi.appendEntry("dev.atopsx.opsx-autopilot.v1", {fired})`, best-effort; omp also caps continuations at 8.
 
-**Rule self-heal**: omp plugin builds don't register packaged `rules/` folders, so `ensureProjectRule` copies `rules/opsx-autopilot.md` → `<project>/.omp/rules/` on session events when missing (effective next omp start). Single source: repo-root `rules/`.
+**Rule self-heal (versioned)**: omp plugin builds don't register packaged `rules/` folders, so `ensureProjectRule` (module-scope, exported) copies `rules/opsx-autopilot.md` → `<project>/.omp/rules/` on session events; an existing rule without a marker or with an older `opsx-autopilot-rule: vN` marker is backed up to `opsx-autopilot.md.bak` and replaced (effective next omp start; marker ≥ `RULE_VERSION` is left untouched). Single source: repo-root `rules/`.
 
 ## Key Directories
 
@@ -84,7 +84,7 @@ Release flow: bump `package.json` **and** `.claude-plugin/marketplace.json` in l
 
 - `src/main.ts` — everything runtime: probes `:217`, `nextAction` `:328`, directives `:363-396`, `loadConfig` `:402`, factory `:429`, `session_stop` `:558`, commands `/opsx-init` `:615`, `/opsx-update` `:668` (runs `openspec update --force`), `/opsx-auto` `:705`.
 - `package.json` — plugin id source of truth (`opsx-autopilot`) via `omp.extensions: ["./src/main.ts"]`; no deps/scripts.
-- `rules/opsx-autopilot.md` — the always-applied routing contract (7 bullets).
+- `rules/opsx-autopilot.md` — the always-applied routing contract (intent routing incl. the GitHub-issue defer path, issue create/pull/close procedures, archive gating).
 - `init.mjs` — offline bootstrap complement; plugin mode copies only config (rule/extension come from the plugin), `--vendor` copies all three + `config.yml` merge.
 - `README.md` — install flows, config table, caveats.
 

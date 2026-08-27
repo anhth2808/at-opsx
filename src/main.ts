@@ -74,6 +74,9 @@ const DEFAULT_CONFIG: AutopilotConfig = {
   verifyCmd: "",
 };
 
+/** Packaged rule version (see marker in rules/opsx-autopilot.md). Bump on rule changes. */
+const RULE_VERSION = 2;
+
 const IS_WIN = process.platform === "win32";
 const EXEC_TIMEOUT_MS = 120_000;
 
@@ -423,6 +426,43 @@ export function loadConfig(cwd: string): AutopilotConfig {
 }
 
 // ---------------------------------------------------------------------------
+// Project rule sync (self-heal, versioned)
+// ---------------------------------------------------------------------------
+
+/**
+ * Plugin `rules/` capability folders are not registered by omp's plugin
+ * discovery on current builds, so the extension ensures the rule itself:
+ * copy the packaged rules/opsx-autopilot.md into <cwd>/.omp/rules/.
+ * Versioned sync: an existing rule with no version marker (pre-v0.4.0) or an
+ * older marker is backed up to opsx-autopilot.md.bak and replaced; a rule at
+ * or above RULE_VERSION is left untouched (respects future/custom rules).
+ * The rule takes effect from the NEXT omp start in that project. Vendored
+ * installs skip this (init.mjs --vendor already placed the rule; no package
+ * dir).
+ */
+export function ensureProjectRule(cwd: string): void {
+  try {
+    if (!isOpenspecProject(cwd)) return;
+    // Bun exposes import.meta.dir at runtime; TS lib types lack it.
+    const meta = import.meta as { dir?: string };
+    if (!meta.dir) return;
+    const src = join(meta.dir, "..", "rules", "opsx-autopilot.md");
+    if (!existsSync(src)) return;
+    mkdirSync(join(cwd, ".omp", "rules"), { recursive: true });
+    const dst = join(cwd, ".omp", "rules", "opsx-autopilot.md");
+    if (existsSync(dst)) {
+      const head = readFileSync(dst, "utf8").split(/\r?\n/).slice(0, 10).join("\n");
+      const m = head.match(/opsx-autopilot-rule:\s*v(\d+)/);
+      if (m && Number(m[1]) >= RULE_VERSION) return;
+      writeFileSync(join(cwd, ".omp", "rules", "opsx-autopilot.md.bak"), readFileSync(dst, "utf8"), "utf8");
+    }
+    writeFileSync(dst, readFileSync(src, "utf8"), "utf8");
+  } catch {
+    // best-effort — the rule also ships via init.mjs for scripted installs
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Extension factory
 // ---------------------------------------------------------------------------
 
@@ -495,31 +535,6 @@ export default function opsxAutopilotExtension(pi: ExtensionAPI): void {
       );
     } catch {
       // headless no-op
-    }
-  }
-
-  /**
-   * Plugin `rules/` capability folders are not registered by omp's plugin
-   * discovery on current builds, so the extension ensures the rule itself:
-   * on session start in an OpenSpec project, copy the packaged
-   * rules/opsx-autopilot.md into <cwd>/.omp/rules/ when missing. The rule
-   * takes effect from the NEXT omp start in that project. Vendored installs
-   * skip this (init.mjs --vendor already placed the rule; no package dir).
-   */
-  function ensureProjectRule(cwd: string): void {
-    try {
-      if (!isOpenspecProject(cwd)) return;
-      const dst = join(cwd, ".omp", "rules", "opsx-autopilot.md");
-      if (existsSync(dst)) return;
-      // Bun exposes import.meta.dir at runtime; TS lib types lack it.
-      const meta = import.meta as { dir?: string };
-      if (!meta.dir) return;
-      const src = join(meta.dir, "..", "rules", "opsx-autopilot.md");
-      if (!existsSync(src)) return;
-      mkdirSync(join(cwd, ".omp", "rules"), { recursive: true });
-      writeFileSync(dst, readFileSync(src, "utf8"), "utf8");
-    } catch {
-      // best-effort — the rule also ships via init.mjs for scripted installs
     }
   }
 
